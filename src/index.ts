@@ -1,49 +1,76 @@
-type Fetch = XMLHttpRequest | ActiveXObject | null;
+"use strict";
+
+//type Fetch = XMLHttpRequest | ActiveXObject | null;
+type Fetch = XMLHttpRequest;
 
 export function createXHR(): Fetch {
-  let xhr: Fetch = null;
+  let xhr: Fetch | null = null;
 
-  try {
-  	xhr = new XMLHttpRequest();
-  } catch {
-  	try {
-  		xhr = new ActiveXObject("Msxml2.XMLHTTP");
-  	} catch {
-  		xhr = new ActiveXObject("Microsoft.XMLHTTP");
-  	}
-  }
+  xhr = new XMLHttpRequest();
+  //try {
+  //	xhr = new XMLHttpRequest();
+  //} catch {
+  //	try {
+  //		xhr = new ActiveXObject("Msxml2.XMLHTTP");
+  //	} catch {
+  //		xhr = new ActiveXObject("Microsoft.XMLHTTP");
+  //	}
+  //}
   
   return xhr;
 }
 
-//const methods = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"] as const;
-//type Method = methods.concat(methods.map(m => m.toLowerCase()));
-type Method = "OPTIONS" | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "TRACE" | "CONNECT";
+const METHODS = [
+  "OPTIONS",
+  "GET",
+  "HEAD",
+  "POST",
+  "PUT",
+  "DELETE",
+  "TRACE",
+  "CONNECT"
+] as const;
 
-type HeadersType = {
-  [string: string]: string
-}
+type Method = typeof METHODS[number];
+
+type HeadersType = Record<string, string>;
+
+type Body = null | string | FormData | Blob | BufferSource;
+
+type CorsMode = "cors" | "no-cors" | "same-origin";
 
 type FetchOptions = {
-  method?: Method,
-  headers?: HeadersType,
-  body?: null | string | FormData | Blob | BufferSource,
-  mode?: "cors" | "no-cors" | "same-origin"
+  method: Method,
+  headers: HeadersType,
+  body: Body,
+  mode: CorsMode,
 };
 
 type Resource = string | URL;
 
-export function pull(resource: Resource, options?: FetchOptions) {
-  const fetchOptions = {
-    method: options?.method ?? "GET",
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-      "Content-Type": "application/x-www-form-urlencoded",
-      ...options?.headers
-    },
-    body: options?.body ?? null,
-    mode: options?.mode ?? "cors",
+const DEFAULT_OPTIONS: FetchOptions = {
+  method: "GET",
+  headers: {
+    //"Content-Type": "application/x-www-form-urlencoded",
+    //"X-Requested-With": "XMLHttpRequest",
+  },
+  body: null,
+  mode: "cors",
+} as const;
+
+function createOptions(userOptions: Partial<FetchOptions> = {}): FetchOptions {
+  const options: FetchOptions = Object.assign(DEFAULT_OPTIONS, userOptions);
+
+  options.headers = {
+    ...DEFAULT_OPTIONS.headers,
+    ...userOptions.headers
   };
+
+  return options;
+}
+
+export function pull(resource: Resource, options?: Partial<FetchOptions>) {
+  const fetchOptions: FetchOptions = createOptions(options);
 
   return new Promise(resolve => {
     const xhr = createXHR();
@@ -55,6 +82,14 @@ export function pull(resource: Resource, options?: FetchOptions) {
           break;
         case 1:
           console.info("OPENED");
+
+          for (const header in fetchOptions.headers) {
+            const headerValue = fetchOptions.headers[header as string];
+      
+            if (typeof headerValue == "string")
+              xhr.setRequestHeader(header, headerValue);
+          }
+
           break;
         case 2:
           console.info("HEADERS_RECEIVED");
@@ -74,16 +109,13 @@ export function pull(resource: Resource, options?: FetchOptions) {
 
     xhr.send(fetchOptions.body);
 
-    for (const header in fetchOptions.headers)
-      xhr.setRequestHeader(header, fetchOptions.headers[header]);
-
-    manageXHREvents(xhr);
+    //manageXHREvents(xhr);
   });
 }
 
 export function manageXHREvents(xhr: Fetch) {
   xhr.onload = function() {
-    console.log(`Loaded: ${this.status} ${this.response}}`);
+    console.log(`Loaded: ${this.status} ${this.statusText}`);
 
     if (this.status != 200)
       console.error(`Error ${this.status}: ${this.statusText}`);
@@ -98,7 +130,7 @@ export function manageXHREvents(xhr: Fetch) {
   xhr.onprogress = function(event: ProgressEvent) {
     console.info(
       `Received ${event.loaded}` +
-        (event.lengthComputable ? ` of ${event.total}}` : "")
+        (event.lengthComputable ? ` of ${event.total}` : "")
     );
   };
 }
