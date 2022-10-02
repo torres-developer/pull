@@ -1,5 +1,7 @@
 "use strict";
 
+import { default as pullResponse } from "./Resource.js";
+
 //type Fetch = XMLHttpRequest | ActiveXObject | null;
 type Fetch = XMLHttpRequest;
 
@@ -35,7 +37,7 @@ type Method = typeof METHODS[number];
 
 type HeadersType = Record<string, string>;
 
-type Body = null | string | FormData | Blob | BufferSource;
+type Body = Document | XMLHttpRequestBodyInit | null | undefined
 
 type CorsMode = "cors" | "no-cors" | "same-origin";
 
@@ -69,7 +71,10 @@ function createOptions(userOptions: Partial<FetchOptions> = {}): FetchOptions {
   return options;
 }
 
-export function pull(resource: Resource, options?: Partial<FetchOptions>) {
+export function pull(
+  resource: Resource,
+  options?: Partial<FetchOptions>
+): Promise<pullResponse> {
   const fetchOptions: FetchOptions = createOptions(options);
 
   return new Promise(resolve => {
@@ -77,12 +82,9 @@ export function pull(resource: Resource, options?: Partial<FetchOptions>) {
 
 	  xhr.onreadystatechange = function() {
 	  	switch (this.readyState) {
-        case 0:
-          console.info("UNSENT");
+        case XMLHttpRequest.UNSENT:
           break;
-        case 1:
-          console.info("OPENED");
-
+        case XMLHttpRequest.OPENED:
           for (const header in fetchOptions.headers) {
             const headerValue = fetchOptions.headers[header as string];
       
@@ -91,16 +93,24 @@ export function pull(resource: Resource, options?: Partial<FetchOptions>) {
           }
 
           break;
-        case 2:
-          console.info("HEADERS_RECEIVED");
+        case XMLHttpRequest.HEADERS_RECEIVED:
           break;
-        case 3:
-          console.info("LOADING");
+        case XMLHttpRequest.LOADING:
           break;
-        case 4:
-          console.info("DONE");
+        case XMLHttpRequest.DONE:
 	  	    if (this.status == 200)
-	  		    resolve(this.response ?? this.responseText);
+	  		    resolve(new pullResponse(
+              {
+                response: this.response,
+                responseText: this.responseText,
+                responseXML: this.responseXML,
+              },
+              {
+                status: this.status,
+                statusText: this.statusText,
+                headers: {}
+              }
+            ));
           break;
       }
 	  }
