@@ -102,24 +102,35 @@ export function pull(
 	  		    resolve(new pullResponse(
               {
                 response: this.response,
-                responseText: this.responseText,
-                responseXML: this.responseXML,
+                responseText: ["", "text"].includes(this.responseType) ?
+                  this.responseText :
+                  null,
+                responseXML: ["", "document"].includes(this.responseType) ?
+                  this.responseXML :
+                  null,
               },
               {
                 status: this.status,
                 statusText: this.statusText,
-                headers: {}
+                headers: Object.fromEntries(this.getAllResponseHeaders()
+                                            .split(/\r\n/)
+                                            .slice(0, -1)
+                                            .map(h => h.split(/:/)
+                                                 .map(i => i.trim()))
+                                            ),
               }
             ));
           break;
       }
 	  }
 
+    xhr.responseType = "blob";
+
     xhr.open(fetchOptions.method, resource, true);
 
     xhr.send(fetchOptions.body);
 
-    //manageXHREvents(xhr);
+    manageXHREvents(xhr);
   });
 }
 
@@ -130,11 +141,11 @@ export function manageXHREvents(xhr: Fetch) {
     if (this.status != 200)
       console.error(`Error ${this.status}: ${this.statusText}`);
     else
-      console.log(`Done, got ${this.response.length} bytes`);
+      console.log(`Done, got ${this.response.length ?? this.response.size} bytes`);
   };
 
   xhr.onerror = function() {
-    console.error("Network Error. Request failed");
+    throw new Error("Network Error. Request failed");
   };
 
   xhr.onprogress = function(event: ProgressEvent) {

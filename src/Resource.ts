@@ -11,7 +11,8 @@ type Body =  null | undefined |
   String;
 
 interface Bodies {
-  response: Body;
+  //response: Body;
+  response: Blob | null;
   responseText: string | null;
   responseXML: Document | XMLDocument | null;
 }
@@ -25,7 +26,8 @@ interface Options {
 }
 
 export default class Resource {
-  response: Body = null;
+  //#response: Body = null;
+  #response: Blob | null = null;
   #responseText: string | null = null;
   #responseXML: Document | null = null;
 
@@ -44,7 +46,7 @@ export default class Resource {
     },
     options: Options = {}
   ) {
-    this.response = bodies['response'];
+    this.#response = bodies['response'];
     this.#responseText = bodies['responseText'];
     this.#responseXML = bodies['responseXML'];
 
@@ -60,26 +62,35 @@ export default class Resource {
       this.ok = true;
   }
 
-  async text(): Promise<string | null> {
-    return this.#responseText;
+  text = async (): Promise<string | null> => {
+    return this.#responseText ?? await this.#response?.text() ?? null;
   }
-  async json() {
-    return JSON.parse(this.#responseText ?? "");
+  json = async () => {
+    return JSON.parse(await this.text() ?? "");
   }
-  async formData() {
+  formData = async () => {
 
   }
-  async blob(): Promise<Blob | null> {
-    return this.response instanceof Blob ?
-      this.response :
+  blob = async (): Promise<Blob | null | any> => {
+    return this.#response instanceof Blob ?
+      this.#response :
       null;
   }
-  async arrayBuffer(): Promise<ArrayBuffer | null> {
-    return this.response instanceof ArrayBuffer ?
-      this.response :
-      null;
+  arrayBuffer = async (): Promise<ArrayBuffer | null> => {
+    return this.#response instanceof ArrayBuffer ?
+      this.#response :
+      this.#response instanceof Blob ?
+        await this.#response.arrayBuffer() :
+        null;
   }
-  async document(): Promise<Document | XMLDocument | null> {
+  document = async (): Promise<Document | XMLDocument | null> => {
     return this.#responseXML;
+  }
+  readableStrem = async (): Promise<ReadableStream | null> => {
+    return this.#response instanceof ReadableStream ?
+      this.#response :
+      this.#response instanceof Blob ?
+        this.#response.stream() :
+        null;
   }
 }
