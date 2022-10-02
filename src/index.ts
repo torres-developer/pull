@@ -1,6 +1,6 @@
 "use strict";
 
-import { default as pullResponse } from "./Resource.js";
+import Resource from "./Resource.js";
 
 //type Fetch = XMLHttpRequest | ActiveXObject | null;
 type Fetch = XMLHttpRequest;
@@ -48,13 +48,13 @@ type FetchOptions = {
   mode: CorsMode,
 };
 
-type Resource = string | URL;
+type ResourceURL = string | URL;
 
 const DEFAULT_OPTIONS: FetchOptions = {
   method: "GET",
   headers: {
-    //"Content-Type": "application/x-www-form-urlencoded",
-    //"X-Requested-With": "XMLHttpRequest",
+    "Content-Type": "application/x-www-form-urlencoded",
+    "X-Requested-With": "XMLHttpRequest",
   },
   body: null,
   mode: "cors",
@@ -72,9 +72,9 @@ function createOptions(userOptions: Partial<FetchOptions> = {}): FetchOptions {
 }
 
 export function pull(
-  resource: Resource,
+  resource: ResourceURL,
   options?: Partial<FetchOptions>
-): Promise<pullResponse> {
+): Promise<Resource> {
   const fetchOptions: FetchOptions = createOptions(options);
 
   return new Promise(resolve => {
@@ -85,12 +85,20 @@ export function pull(
         case XMLHttpRequest.UNSENT:
           break;
         case XMLHttpRequest.OPENED:
+          if (options?.body instanceof FormData)
+            this.setRequestHeader("Content-Type", "multipart/form-data");
+          else if (options?.body instanceof URLSearchParams)
+            this.setRequestHeader("Content-Type", "x-www-form-urlencoded");
+
           for (const header in fetchOptions.headers) {
             const headerValue = fetchOptions.headers[header as string];
       
             if (typeof headerValue == "string")
-              xhr.setRequestHeader(header, headerValue);
+              // check forbidden headers
+              xhr.setRequestHeader(header.trim(), headerValue.trim());
           }
+          
+          this.send(fetchOptions.body);
 
           break;
         case XMLHttpRequest.HEADERS_RECEIVED:
@@ -99,7 +107,7 @@ export function pull(
           break;
         case XMLHttpRequest.DONE:
 	  	    if (this.status == 200)
-	  		    resolve(new pullResponse(
+	  		    resolve(new Resource(
               {
                 response: this.response,
                 responseText: ["", "text"].includes(this.responseType) ?
@@ -127,8 +135,6 @@ export function pull(
     xhr.responseType = "blob";
 
     xhr.open(fetchOptions.method, resource, true);
-
-    xhr.send(fetchOptions.body);
 
     manageXHREvents(xhr);
   });
