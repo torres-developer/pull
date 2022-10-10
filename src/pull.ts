@@ -46,6 +46,7 @@ type FetchOptions = {
   headers: HeadersType,
   body: Body,
   mode: CorsMode,
+  credentials: boolean,
 };
 
 type ResourceURL = string | URL;
@@ -58,6 +59,7 @@ const DEFAULT_OPTIONS: FetchOptions = {
   },
   body: null,
   mode: "cors",
+  credentials: false,
 } as const;
 
 function createOptions(userOptions: Partial<FetchOptions> = {}): FetchOptions {
@@ -133,6 +135,8 @@ export function pull(
 	  }
 
     xhr.responseType = "blob";
+
+    xhr.withCredentials = fetchOptions.credentials;
 
     xhr.open(fetchOptions.method, resource, true);
 
