@@ -1,15 +1,43 @@
 {
-	"name": "pull",
- 	"version": "1.0.0",
- 	"description": "It's like fetch",
- 	"main": "lib/index.js",
- 	"repository": "git@github.com:torres-developer/pull.git",
- 	"author": "torres-developer <torres.dev@disroot.org>",
- 	"license": "GPL-3.0-or-later",
- 	"private": true,
- 	"devDependencies": {
- 		"@tsconfig/strictest": "^1.0.2",
- 		"typescript": "^4.8.3"
- 	},
- 	"type": "module"
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "pull",
+  "version": "1.0.0",
+  "description": "It's like the fetch API but using XMLHttpRequest (and possibly ActiveXObject)",
+  "keywords": [
+    "fetch",
+    "XMLHttpRequest",
+    "ActiveXObject"
+  ],
+  "homepage": "https://github.com/torres-developer/pull#readme",
+  "bugs": {
+    "url": "https://github.com/torres-developer/pull/issues"
+  },
+  "license": "GPL-3.0-or-later",
+  "contributors": [
+    {
+      "name": "João Augusto Torres",
+      "email": "torres.dev@disroot.org",
+      "url": "https://github.com/torres-developer/"
+    }
+  ],
+  "main": "./lib/pull.js",
+  "types": "./lib/pull.d.ts",
+  "browser": "./lib/pull.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/torres-developer/pull"
+  },
+  "scripts": {
+    "build": "rm -rf ./lib/; tsc;"
+  },
+  "dependencies": {
+    "tslib": "^2.5.3"
+  },
+  "devDependencies": {
+    "@tsconfig/esm": "^1.0.3",
+    "@tsconfig/recommended": "^1.0.2",
+    "@tsconfig/strictest": "^2.0.1",
+    "typescript": "^5.1.3"
+  },
+  "type": "module"
 }

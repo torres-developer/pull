@@ -47,6 +47,8 @@ type FetchOptions = {
   body: Body,
   mode: CorsMode,
   credentials: boolean,
+  referrer: string | URL,
+  referrerPolicy: ReferrerPolicy,
 };
 
 type ResourceURL = string | URL;
@@ -54,12 +56,14 @@ type ResourceURL = string | URL;
 const DEFAULT_OPTIONS: FetchOptions = {
   method: "GET",
   headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-    "X-Requested-With": "XMLHttpRequest",
+    //"Content-Type": "text/plain;charset=UTF-8",
+    //"X-Requested-With": "XMLHttpRequest",
   },
   body: null,
   mode: "cors",
   credentials: false,
+  referrer: "",
+  referrerPolicy: "",
 } as const;
 
 function createOptions(userOptions: Partial<FetchOptions> = {}): FetchOptions {
@@ -87,10 +91,13 @@ export function pull(
         case XMLHttpRequest.UNSENT:
           break;
         case XMLHttpRequest.OPENED:
-          if (options?.body instanceof FormData)
-            this.setRequestHeader("Content-Type", "multipart/form-data");
-          else if (options?.body instanceof URLSearchParams)
-            this.setRequestHeader("Content-Type", "x-www-form-urlencoded");
+          fetchOptions.headers["Content-Type"] ??=
+            calcContentType(fetchOptions.body);
+          
+          this.setRequestHeader(
+            "Content-Type",
+            fetchOptions.headers["Content-Type"]
+          );
 
           for (const header in fetchOptions.headers) {
             const headerValue = fetchOptions.headers[header as string];
@@ -151,7 +158,8 @@ export function manageXHREvents(xhr: Fetch) {
     if (this.status != 200)
       console.error(`Error ${this.status}: ${this.statusText}`);
     else
-      console.log(`Done, got ${this.response.length ?? this.response.size} bytes`);
+      console.log(`Done, got ${this.response.length
+        ?? this.response.size} bytes`);
   };
 
   xhr.onerror = function() {
@@ -164,6 +172,24 @@ export function manageXHREvents(xhr: Fetch) {
         (event.lengthComputable ? ` of ${event.total}` : "")
     );
   };
+}
+
+function calcContentType(content: Body): string {
+  if (content instanceof XMLDocument)
+    return "text/xml";
+
+  if (content instanceof Document)
+    return "text/html";
+
+  if (content instanceof FormData)
+    return "multipart/form-data";
+
+  if (content instanceof URLSearchParams)
+    return "x-www-form-urlencoded";
+  
+  if (content instanceof Blob) {}
+
+  return "text/plain;charset=UTF-8";
 }
 
 // xhr.timeout = millis if request does not succeed in n ms -> timeout event

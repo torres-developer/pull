@@ -1,13 +1,38 @@
 {
-	"extends": "@tsconfig/strictest/tsconfig.json",
-	"compilerOptions": {
-		"lib": ["dom", "esnext"],
-		"module": "es2022",
-		"target": "es2019",
-		"declaration": true,
-		"outDir": "./lib"
-	},
-	"include": [
-		"src/pull.ts"
-	]
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": [
+      "@tsconfig/recommended/tsconfig.json",
+      "@tsconfig/esm/tsconfig.json",
+      "@tsconfig/strictest/tsconfig.json"
+  ],
+  "compilerOptions": {
+    "target": "ES5",
+    "lib": [ "DOM", "ESNext" ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": true,
+    "module": "ES2022",
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "importHelpers": true,
+    "emitBOM": false,
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "outDir": "./lib/",
+    "paths": {
+        "tslib": ["./node_modules/tslib/tslib.d.ts"]
+    }
+  },
+  "include": [ "./src/**/*.ts" ]
 }
