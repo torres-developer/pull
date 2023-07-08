@@ -1,13 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": [
-      "@tsconfig/recommended/tsconfig.json",
-      "@tsconfig/esm/tsconfig.json",
-      "@tsconfig/strictest/tsconfig.json"
+    "@tsconfig/recommended/tsconfig.json",
+    "@tsconfig/esm/tsconfig.json",
+    "@tsconfig/strictest/tsconfig.json"
   ],
   "compilerOptions": {
     "target": "ES5",
-    "lib": [ "DOM", "ESNext" ],
+    "lib": ["DOM", "ESNext"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": true,
@@ -31,8 +31,8 @@
     "alwaysStrict": true,
     "outDir": "./lib/",
     "paths": {
-        "tslib": ["./node_modules/tslib/tslib.d.ts"]
+      "tslib": ["./node_modules/tslib/tslib.d.ts"]
     }
   },
-  "include": [ "./src/**/*.ts" ]
+  "include": ["./src/**/*.ts"]
 }

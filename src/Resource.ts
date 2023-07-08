@@ -20,9 +20,9 @@ interface Bodies {
 type ResponseHeaders = Headers | Record<string, string>;
 
 interface Options {
-  status?: number,
-  statusText?: string,
-  headers?: ResponseHeaders,
+  status?: number;
+  statusText?: string;
+  headers?: ResponseHeaders;
 }
 
 export default class Resource {
@@ -36,7 +36,7 @@ export default class Resource {
 
   ok: boolean = false;
 
-  headers: ResponseHeaders = {}
+  headers: ResponseHeaders = {};
 
   constructor(
     bodies: Bodies = {
@@ -44,11 +44,11 @@ export default class Resource {
       responseText: null,
       responseXML: null,
     },
-    options: Options = {}
+    options: Options = {},
   ) {
-    this.response = bodies['response'];
-    this.responseText = bodies['responseText'];
-    this.responseXML = bodies['responseXML'];
+    this.response = bodies["response"];
+    this.responseText = bodies["responseText"];
+    this.responseXML = bodies["responseXML"];
 
     if (options.status) this.setStatus(options.status);
     if (options.statusText) this.statusText = options.statusText;
@@ -58,39 +58,37 @@ export default class Resource {
   setStatus(statusCode: number) {
     this.status = statusCode;
 
-    if (Math.ceil(statusCode / 100))
+    if (Math.ceil(statusCode / 100)) {
       this.ok = true;
+    }
   }
 
   text = async (): Promise<string | null> => {
     return this.responseText ?? await this.response?.text() ?? null;
-  }
+  };
   json = async () => {
     return JSON.parse(await this.text() ?? "");
-  }
+  };
   formData = async () => {
-
-  }
+  };
   blob = async (): Promise<Blob | null | any> => {
-    return this.response instanceof Blob ?
-      this.response :
-      null;
-  }
+    return this.response instanceof Blob ? this.response : null;
+  };
   arrayBuffer = async (): Promise<ArrayBuffer | null> => {
-    return this.response instanceof ArrayBuffer ?
-      this.response :
-      this.response instanceof Blob ?
-        await this.response.arrayBuffer() :
-        null;
-  }
+    return this.response instanceof ArrayBuffer
+      ? this.response
+      : this.response instanceof Blob
+      ? await this.response.arrayBuffer()
+      : null;
+  };
   document = async (): Promise<Document | XMLDocument | null> => {
     return this.responseXML;
-  }
+  };
   readableStrem = async (): Promise<ReadableStream | null> => {
-    return this.response instanceof ReadableStream ?
-      this.response :
-      this.response instanceof Blob ?
-        this.response.stream() :
-        null;
-  }
+    return this.response instanceof ReadableStream
+      ? this.response
+      : this.response instanceof Blob
+      ? this.response.stream()
+      : null;
+  };
 }
