@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "polypull",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "It's like the fetch API but using XMLHttpRequest (and possibly ActiveXObject)",
   "keywords": [
     "fetch",
